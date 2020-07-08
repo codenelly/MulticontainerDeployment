@@ -1,0 +1,21 @@
+sudo : required
+services :
+    - docker
+before_install :
+    - docker build  -t  codenelly/react-test -f ./client/Dockerfile.dev ./client
+script : 
+    - docker run codenelly/react-test  npm test -- --coverage
+after_success :
+    - docker build codenelly/multi-client  ./client
+    - docker build codenelly/multi-nginx   ./nginx
+    - docker build codenelly/multi-server  ./server
+    - docker build codenelly/multi-worker  ./worker
+    # Docker Login
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    #Take those images and push those to docker hub
+    - docker push codenelly/multi-client
+    - docker push codenelly/multi-nginx
+    - docker push codenelly/multi-server 
+    - docker push codenelly/multi-worker
+
+
